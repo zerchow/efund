@@ -284,3 +284,241 @@ string="abcd"
 echo `expr index "string" c`  # 3，索引从1开始
 ```
 
+# 定义数组
+
+### 在Shell中，用括号来表示数组，数组元素用“空格”符号分割开
+
+### 可以不使用连续的下标，而且下标的范围没有限制
+
+```shell
+array_name=(value0 value1 value2)
+
+array_name=(
+value0
+value1
+value2)
+
+# 单独定义各个分量
+
+array_name[0]=value0
+array_name[1]=value1
+array_name[2]=value2
+```
+
+## 读取数组
+
+```shell
+value=${array_name[2]}
+
+# 读取所有元素
+echo ${array_name[*]}
+echo ${array_name[@]}
+```
+
+## 获取数组长度
+
+```shell
+len=${#array_name[*]}
+len=${#array_name[@]}
+
+# 获取单个元素长度
+len_2=${#array_name[2]}
+```
+
+# printf
+
+- printf 命令不用加括号
+- format-string 可以没有引号，但最好加上，单引号双引号均可。
+- 参数多于格式控制符(%)时，format-string 可以重用，可以将所有参数都转换。
+- arguments 使用空格分隔，不用逗号。
+
+```shell
+# format-string为双引号
+$ printf "%d %s\n" 1 "abc"
+1 abc
+# 单引号与双引号效果一样 
+$ printf '%d %s\n' 1 "abc" 
+1 abc
+# 没有引号也可以输出
+$ printf %s abcdef
+abcdef
+# 格式只指定了一个参数，但多出的参数仍然会按照该格式输出，format-string 被重用
+$ printf %s abc def
+abcdef
+$ printf "%s\n" abc def
+abc
+def
+$ printf "%s %s %s\n" a b c d e f g h i j
+a b c
+d e f
+g h i
+j
+# 如果没有 arguments，那么 %s 用NULL代替，%d 用 0 代替
+$ printf "%s and %d \n" 
+and 0
+# 如果以 %d 的格式来显示字符串，那么会有警告，提示无效的数字，此时默认置为 0
+$ printf "The first program always prints'%s,%d\n'" Hello Shell
+-bash: printf: Shell: invalid number
+The first program always prints 'Hello,0'
+```
+
+# case
+
+```shell
+read num
+case $num in
+  1)
+  echo "num is 1"
+  ;;
+  2)
+  echo "num is 2"
+  ;;
+  3)
+  echo "num is 3"
+  ;;
+  *)
+  echo "other"
+  ;;
+esac
+```
+
+## 参数例子
+
+```shell
+option="$1"
+case ${option} in
+  -f)
+  FILE="$2"
+  echo "file name is $FILE"
+  ;;
+  -d)
+  DIR="$2"
+  echo "dir name is $DIR"
+  ;;
+  *)
+  exit 1
+  ;;
+esac
+```
+
+# for
+
+### 列表是一组值（数字、字符串等）组成的序列，每个值通过空格分隔。每循环一次，就将列表中的下一个值赋给变量
+
+### in 列表是可选的，如果不用它，for 循环使用命令行的位置参数
+
+## 输出列表
+
+```shell
+for loop in 1 2 3 4 5 6
+do
+  echo $loop
+done
+```
+
+## 输出字符串的字符
+
+```shell
+for c in "string"
+do
+  echo $c
+done
+```
+
+## 输出特定文件
+
+```shell
+for FILE in $HOME/.bash*  # 以.bash开头
+do
+  echo $FILE
+done
+```
+
+# while
+
+## 输出1到5
+
+```shell
+count=0
+while [ $count -lt 5 ]
+do
+  $count=`expr $count + 1`
+  echo $count
+done
+```
+
+## 读取键盘
+
+```shell
+echo "type ctrl+d to stop"
+while read FILE
+do
+  echo $FILE
+done
+```
+
+# until
+
+```shell
+a=0
+until [ ! $a -lt 10 ]
+do
+  echo $a
+  $a=`expr $a + 1`
+done
+```
+
+# break
+
+### `break n`表示跳出第n层循环
+
+# continue
+
+### `continue n`表示跳到第n层循环的下一次循环
+
+# 函数
+
+### 先定义后使用
+
+### function关键字可加可不加
+
+### 函数返回值，可以显式增加return语句；如果不加，会将最后一条命令运行结果作为返回值
+
+### Shell 函数返回值只能是整数，一般用来表示函数执行成功与否，0表示成功，其他值表示失败。如果 return其他数据，比如一个字符串，往往会得到错误提示：“numeric argument required”
+
+### 如果一定要让函数返回字符串，那么可以先定义一个变量，用来接收函数的计算结果，脚本在需要的时候访问这个变量来获得函数返回值
+
+> 外部变量存储，或者$(function_namme)
+
+### 调用函数只需要给出函数名，不需要加括号
+
+### 用#?访问函数调用返回的整数值
+
+### 如果你希望直接从终端调用函数，可以将函数定义在主目录下的 .profile 文件，这样每次登录后，在命令提示符后面输入函数名字就可以立即调用
+
+## 删除函数
+
+```shell
+unset .f function_name
+```
+
+# 函数参数
+
+### 在Shell中，调用函数时可以向其传递参数。在函数体内部，通过 $n的形式来获取参数的值，例如，$1表示第一个参数，$2表示第二个参数...
+
+### $10 不能获取第十个参数，获取第十个参数需要${10}。当n>=10时，需要使用${n}来获取参数
+
+```shell
+# 调用
+funWithParam 1 2 3 4 5 6 7 8 9 34 73
+```
+
+# 文件包含
+
+### 被包含脚本不需要有执行权限
+
+```shell
+. filename
+source filename
+```
+
